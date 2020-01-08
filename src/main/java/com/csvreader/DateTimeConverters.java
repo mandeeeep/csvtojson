@@ -1,6 +1,10 @@
 package com.csvreader;
 
+import org.apache.commons.lang3.tuple.Pair;
+
+import java.time.LocalDateTime;
 import java.util.Optional;
+import java.util.TimeZone;
 
 public class DateTimeConverters {
 
@@ -107,6 +111,7 @@ public class DateTimeConverters {
         return new org.joda.time.Period(period.getYears(), period.getMonths(), 0, period.getDays(), 0, 0, 0, 0);
     }
 
+
     public static Optional<String> safelyStringifyJodaDateTimeStringToNominalDateString(String jodaTimeStr) {
         try {
             String inputPattern = "yyyy-MM-dd'T'HH:mm:ss.SSSZZ";
@@ -121,16 +126,31 @@ public class DateTimeConverters {
         }
     }
 
-    public static Optional<java.time.LocalDateTime> stringifyJodaDateTimeStringToLocalDateTimeSafelyWithoutTimezone(String jodaDateTime) {
+    public static Optional<java.time.LocalDateTime> safelyStringifyJodaDateTimeStringToLocalDateTimeSafelyWithoutTimezone(String jodaDateTime) {
         try {
             java.time.format.DateTimeFormatter formatter = java.time.format.DateTimeFormatter
                     .ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSX");
-            //.withZone(ZoneId.of("UTC"));
             java.time.LocalDateTime dateTime = java.time.LocalDateTime.parse(jodaDateTime, formatter);
             return Optional.ofNullable(dateTime);
         } catch (Exception e) {
             return Optional.empty();
         }
+    }
 
+    public static org.joda.time.DateTime stringifyJodaDateTimeStringToDateTime(String jodaTimeStr) {
+        String pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSZZ";
+        org.joda.time.format.DateTimeFormatter formatter = org.joda.time.format.DateTimeFormat.forPattern(pattern);
+        return formatter.parseDateTime(jodaTimeStr);
+    }
+
+    public static Optional<Pair<LocalDateTime, TimeZone>> safelyStringifyJodaDateTimeStringToLocalDateTimeSafelyWithTimezone(String jodaDateTime) {
+        try {
+            java.time.format.DateTimeFormatter formatter = java.time.format.DateTimeFormatter
+                    .ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSX");
+            java.time.LocalDateTime dateTime = java.time.LocalDateTime.parse(jodaDateTime, formatter);
+            return Optional.ofNullable(Pair.of(dateTime, stringifyJodaDateTimeStringToDateTime(jodaDateTime).getZone().toTimeZone()));
+        } catch (Exception e) {
+            return Optional.empty();
+        }
     }
 }
